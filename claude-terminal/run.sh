@@ -103,15 +103,25 @@ migrate_legacy_auth_files() {
     fi
 }
 
+
 # Install required tools
 install_tools() {
     bashio::log.info "Installing additional tools..."
     apt-get update -qq
-    if ! apt-get install -y --no-install-recommends ttyd jq curl tmux; then
+    if ! apt-get install -y --no-install-recommends jq curl tmux; then
         bashio::log.error "Failed to install required tools"
         exit 1
     fi
     rm -rf /var/lib/apt/lists/*
+
+    # Install ttyd from GitHub releases (not in Debian repos)
+    bashio::log.info "Installing ttyd from GitHub releases..."
+    local ttyd_url="https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.aarch64"
+    if ! curl -fsSL "$ttyd_url" -o /usr/local/bin/ttyd; then
+        bashio::log.error "Failed to download ttyd"
+        exit 1
+    fi
+    chmod +x /usr/local/bin/ttyd
     bashio::log.info "Tools installed successfully"
 }
 
